@@ -24,7 +24,7 @@
 ## 使用方法
 1. 下载[books.html](books.html)到本地。
 2. 用任意文本编辑器打开`books.html`，找到4个JSON列表：`readingBooks`（在读）、`boughtBooks`（已购买）、`readBooks`（读过）、`suspendedBooks`（暂停），列表的每一行是一本书（每一行的结构见下一节「数据结构」），把自己的书的信息输入进去。
-3. 用浏览器打开`books.html`，即可看到网页。
+3. 用浏览器打开`books.html`，即可看到网页（点击[此处](https://liqi4096.github.io/books/books.html)查看样例）。
 
 ## 数据结构
 每本书用一个JSON对象表示，结构如下：
