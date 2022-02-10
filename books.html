@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>我读的书</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Language" content="zh-cn">
+<script>
+var readingBooks = [
+  {"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+  {"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"200", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+  {"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"300", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+];
+
+var boughtBooks = [
+{"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"300", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"多看", "pages":"500", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"多看", "pages":"800", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"多看", "pages":"1000", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"多看", "pages":"1100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"微信", "pages":"1200", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"京东", "pages":"1500", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"当当", "pages":"2000", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"当当", "pages":"2200", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+];
+
+var readBooks = [
+{"name":"样例", "readDate":"2022-2-10", "rating":"5", "media":"纸质书", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2022-2-1", "rating":"4", "media":"纸质书", "pages":"200", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2022-1-19", "rating":"5", "media":"微信", "pages":"500", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2022-1-16", "rating":"4", "media":"京东", "pages":"800", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2022-1-16", "rating":"3", "media":"当当", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2022-1-16", "rating":"2", "media":"PDF", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2021-12-30", "rating":"4", "media":"当当", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2021-12-30", "rating":"3", "media":"当当", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2021-12-30", "rating":"3", "media":"当当", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2021-11-1", "rating":"2", "media":"京东", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2021-11-1", "rating":"1", "media":"京东", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"2021-11-1", "rating":"4", "media":"京东", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+];
+
+var suspendedBooks = [
+{"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+{"name":"样例", "readDate":"", "rating":"", "media":"纸质书", "pages":"100", "doubanUrl":"", "imageUrl":"images/samplebook.png", "comment":""},
+];
+
+function renderBookList(bookList, media, pagesRange, order) {
+  var s = "<div class=bookList>";
+  var currentReadYear = "";
+  var currentReadMonth = "";
+  
+  if (order == "按评级序") {
+    bookList = sortBookList(bookList, compareByRating);
+  } else if (order == "ReadYearAndRating") {
+    bookList = sortBookList(bookList, compareByReadYearAndRating);
+  }
+
+  for (var book of bookList) {
+    if (media && media != "所有介质" && media != book.media)
+      continue;
+    if (pagesRange && pagesRange != "所有") {
+      var bookPagesRange = getPagesRange(book.pages);
+      if (bookPagesRange != pagesRange)
+        continue;
+    }
+    var readYear = getYear(book.readDate);
+    if (currentReadYear != readYear) {
+      var readYearCount = getReadYearCount(bookList, readYear, media, pagesRange);
+      var readYearPageCount = getReadYearPageCount(bookList, readYear, media, pagesRange);
+      s += "<div class=readYear>" + readYear + "<span class=count>" + readYearCount + "本</span><span class=count>" + readYearPageCount + "页</span></div>";
+      currentReadYear = readYear;
+    }
+    var readMonth = getMonth(book.readDate);
+    if (currentReadMonth != readMonth) {
+      var readMonthCount = getReadMonthCount(bookList, readMonth, media, pagesRange);
+      var readMonthPageCount = getReadMonthPageCount(bookList, readMonth, media, pagesRange);
+      s += "<div class=readMonth>" + readMonth + "<span class=count>" + readMonthCount + "本</span><span class=count>" + readMonthPageCount + "页</span></div>";
+      currentReadMonth = readMonth;
+    }
+    s += "<div class=\"book " + book.media + " " + getPagesRange(book.pages) + "\">";
+    s += "<a target=_blank href=\"" + book.doubanUrl + "\"><div class=image><img src=\"" + book.imageUrl + "\"></div></a>";
+    s += "<div class=detail>";
+    s += "<a target=_blank href=\"" + book.doubanUrl + "\"><div class=name>" + book.name + "</div></a>";
+    if (book.media) {
+      s += "<div class=media>" + book.media + "</div>";
+    }
+    if (book.readDate) {
+      s += "<div class=readDate>" + book.readDate + "</div>";
+    }
+    if (book.pages) {
+      s += renderPagesIndicator("percent0", book.pages, 0);
+      if (book.pages > 1000) {
+        s += renderPagesIndicator("percent1", book.pages, 1000);
+      }
+      if (book.pages > 2000) {
+        s += renderPagesIndicator("percent2", book.pages, 2000);
+      }
+      if (book.pages > 3000) {
+        s += renderPagesIndicator("percent3", book.pages, 3000);
+      }
+    }
+    s += renderRating(book.rating)
+    s += "</div></div>";
+  }
+  s += "</div>";
+  return s;
+}
+
+function renderPagesIndicator(className, pages, base) {
+  var percent = (pages - base) / 1000 * 100;
+  var s = "";
+  if (percent > 100) {
+    percent = 100;
+  }
+  s += "<div class=\"pagesIndicator " + className + "\" style='width:" + percent + "%'>";
+  s += "<div class=pagesText>" + pages + "页</div>";
+  s += "</div>";
+  return s;
+}
+
+function renderRating(rating) {
+  var s = "";
+  s += "<div class=rating>";
+  if (rating) {
+    if (rating == 5)
+      s += "<span class=star>★★★★★</span>";
+    else if (rating == 4)
+      s += "<span class=star>★★★★</span><span class=hollowStar>☆</span>"
+    else if (rating == 3)
+    s += "<span class=star>★★★</span><span class=hollowStar>☆☆</span>"
+    else if (rating == 2)
+    s += "<span class=star>★★</span><span class=hollowStar>☆☆☆</span>"
+    else if (rating == 1)
+    s += "<span class=star>★</span><span class=hollowStar>☆☆☆☆</span>"
+  }
+  s += "</div>";
+  return s;
+}
+
+function renderMediaOptionButton(media, bookListName) {
+  var bookList = eval(bookListName)
+  var mediaCount = getMediaCount(bookList, media);
+  if (mediaCount == 0 && media != "所有介质")
+    return "";
+  var s = "<div class=\"option media-" + media 
+    + "\" onclick\=\"setOption('" + bookListName + "', 'media', '" + media + "');" 
+    + "refreshBookList('" + bookListName + "');\">" 
+    + media;
+  if (media != "所有介质")
+    s += "<span class=count>" + mediaCount + "</span>";
+  s += "</div>";
+  return s;
+}
+
+function renderPagesRangeOptionButton(pagesRange, bookListName) {
+  var bookList = eval(bookListName)
+  var pagesRangeCount = getPagesRangeCount(bookList, pagesRange);
+  if (pagesRangeCount == 0 && pagesRange != "所有")
+    return "";
+  var s = "<div class=\"option pagesRange-" + pagesRange 
+    + "\" onclick\=\"setOption('" + bookListName + "', 'pagesRange', '" + pagesRange + "');" 
+    + "refreshBookList('" + bookListName + "');\">" 
+    + pagesRange;
+  if (pagesRange != "所有")
+    s += "<span class=count>" + pagesRangeCount + "</span>";
+  s += "</div>";
+  return s;
+}
+
+function renderOrderOptionButton(order, bookListName) {
+  var bookList = eval(bookListName)
+  var s = "<div class=\"option order-" + order 
+    + "\" onclick\=\"setOption('" + bookListName + "', 'order', '" + order + "');"
+    + "refreshBookList('" + bookListName + "');\">" 
+    + order;
+  s += "</div>";
+  return s;
+}
+
+function getPagesRange(pageCount) {
+  if (!pageCount)
+    return "未知";
+  else if (pageCount < 200)
+    return "200页以下";
+  else if (pageCount < 500 && pageCount >= 200)
+    return "200到500页";
+  else if (pageCount < 1000 && pageCount >= 500)
+    return "500到1000页";
+  else if (pageCount >= 1000)
+    return "1000页以上";
+}
+
+function getMediaCount(bookList, media) {
+  var count = 0;
+  for (var book of bookList) {
+    if (book.media.indexOf(media) != -1)
+      count++;
+  }
+  return count;
+}
+
+function getPagesRangeCount(bookList, pagesRange) {
+  var count = 0;
+  for (var book of bookList) {
+    var bookPagesRange = getPagesRange(book.pages);
+      if (bookPagesRange == pagesRange)
+        count++;
+  }
+  return count;
+}
+
+function getMonth(date) {
+  if (!date)
+    return "";
+  var split = date.split("-");
+	var month = split[0] + "年" + split[1] + "月";
+  return month;
+}
+
+function getYear(date) {
+  if (!date)
+    return "";
+  var split = date.split("-");
+	var year = split[0] + "年";
+  return year;
+}
+
+function getReadMonthCount(bookList, readMonth, media, pagesRange) {
+  var count = 0;
+  for (var book of bookList) {
+    if ((!media || media == "所有介质" || media == book.media)
+      && (!pagesRange || pagesRange == "所有" || pagesRange == getPagesRange(book.pages))
+      && getMonth(book.readDate) == readMonth)
+      count++;
+  }
+  return count;
+}
+
+function getReadYearCount(bookList, readYear, media, pagesRange) {
+  var count = 0;
+  for (var book of bookList) {
+    if ((!media || media == "所有介质" || media == book.media) 
+      && (!pagesRange || pagesRange == "所有" || pagesRange == getPagesRange(book.pages))
+      && getYear(book.readDate) == readYear)
+    count++;
+  }
+  return count;
+}
+
+function getReadMonthPageCount(bookList, readMonth, media, pagesRange) {
+  var count = 0;
+  for (var book of bookList) {
+    if ((!media || media == "所有介质" || media == book.media)
+      && (!pagesRange || pagesRange == "所有" || pagesRange == getPagesRange(book.pages))
+      && getMonth(book.readDate) == readMonth)
+      count += parseInt(book.pages);
+  }
+  return count;
+}
+
+function getReadYearPageCount(bookList, readYear, media, pagesRange) {
+  var count = 0;
+  for (var book of bookList) {
+    if ((!media || media == "所有介质" || media == book.media) 
+      && (!pagesRange || pagesRange == "所有" || pagesRange == getPagesRange(book.pages))
+      && getYear(book.readDate) == readYear)
+    count += parseInt(book.pages);
+  }
+  return count;
+}
+
+function setOption(elementId, optionName, optionValue) {
+  var element = document.getElementById(elementId);
+  var className = element.className;
+  // 从className中删除已存在的optionName
+  className.split(" ").forEach(function (item) {
+    var split = item.split("-");
+    if (split.length != 2)
+      return;
+    if (split[0] == optionName) {
+      var index = className.indexOf(optionName);
+      className = className.substring(0, index) + className.substring(index + item.length);
+    }
+  });
+  element.className = className + " " + optionName + "-" + optionValue;
+}
+
+function getOption(elementId, optionName) {
+  var element = document.getElementById(elementId);
+  var className = element.className;
+  var result = null;
+  className.split(" ").forEach(function (item) {
+    var split = item.split("-");
+    if (split.length != 2)
+      return;
+    if (split[0] == optionName) {
+      result = split[1];
+    }
+  });
+  return result;
+}
+
+function refreshBookList(bookListName) {
+  var bookCollectionElement = document.getElementById(bookListName);
+  var media = getOption(bookListName, "media");
+  var pagesRange = getOption(bookListName, "pagesRange");
+  var group = getOption(bookListName, "group");
+  var order = getOption(bookListName, "order");
+
+  if (group == "year" && order == "按评级序") {
+    order = "ReadYearAndRating";
+  }
+
+  var bookList = eval(bookListName);
+  var renderedBookListHtml = renderBookList(bookList, media, pagesRange, order);
+  var bookListContainer = bookCollectionElement.lastElementChild;
+  bookListContainer.innerHTML = renderedBookListHtml;
+}
+
+function Book(name, readDate, rating, media, pages, doubanUrl, imageUrl) {
+  this.name = name;
+  this.readDate = readDate;
+  this.rating = rating;
+  this.media = media;
+  this.pages = pages;
+  this.doubanUrl = doubanUrl;
+  this.imageUrl = imageUrl;
+}
+
+function cloneBook(book) {
+  var result = new Book(book.name, book.readDate, book.rating, book.media, book.pages, book.doubanUrl, book.imageUrl);
+  return result;
+}
+function cloneBookList(bookList) {
+  var result = new Array();
+  for (var book of bookList) {
+    result.push(cloneBook(book));
+  }
+  return result;
+}
+
+function sortBookList(bookList, compare) {
+  var workingList = cloneBookList(bookList);
+  var result = new Array();
+  while (workingList.length > 0) {
+    var maxIndex = 0;
+    for (var i = 1; i < workingList.length; i++) {
+      if (compare(workingList[maxIndex], workingList[i]) < 0) {
+        maxIndex = i;
+      }
+    }
+    result.push(workingList[maxIndex]);
+    workingList.splice(maxIndex, 1);
+  }
+  return result;
+}
+
+function compareByRating(book1, book2) {
+  if (book1 && book1.rating && book2 && book2.rating) {
+    if (book1.rating > book2.rating)
+      return 1;
+    else if (book1.rating < book2.rating)
+      return -1
+  }
+  return 0;
+}
+
+function compareByReadYearAndRating(book1, book2) {
+  if (!book1 && !book2)
+    return 0;
+  if (book1 && !book2)
+    return 1;
+  if (!book1 && book2)
+    return -1;
+
+  var readYear1 = getYear(book1.readDate);
+  var readYear2 = getYear(book2.readDate);
+
+  if (!readYear1 && !readYear2)
+    return 0;
+  if (readYear1 && !readYear2)
+    return 1;
+  if (!readYear1 && readYear2)
+    return -1;
+
+  if (readYear1 > readYear2)
+    return 1;
+  else if (readYear1 < readYear2)
+    return -1;
+  else 
+    return compareByRating(book1, book2);
+}
+
+function generateRefreshBookPagesCommand(bookList) {
+  var command = "touch temp.txt\n";
+  for (var book of bookList) {
+    command += "pages=$(curl -s " + book.doubanUrl + " | grep \"<span class=\\\"pl\\\">页数:</span>\" | sed -e \"s/^    <span class=\\\"pl\\\">页数:<\\/span> //\" -e \"s/<br\\/>//\");";
+    command += "echo \"  {\\\"name\\\":\\\"" + book.name + "\\\", \\\"readDate\\\":\\\"" + book.readDate + "\\\", \\\"media\\\":\\\"" + book.media + "\\\", \\\"pages\\\":\\\"${pages}\\\", \\\"doubanUrl\\\":\\\"" + book.doubanUrl + "\\\", \\\"imageUrl\\\":\\\"" + book.imageUrl + "\\\"},\" >> temp.txt \n";
+
+  }
+  console.log(command);
+}
+</script>
+<style type="text/css">
+* {
+  font-family: 苹方,微软雅黑;
+}
+body {
+  margin: 20px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #48474B;
+    color: #DEDEDC;
+  }
+}
+a {
+  color: black;
+  text-decoration: none;
+}
+a:visited {
+  color: black;
+}
+@media (prefers-color-scheme: dark) {
+  a, a:visited {
+    color: #DEDEDC;
+  }  
+}
+.bookCollection {
+  clear: both;
+}
+#suspendedBooks {
+  padding: 40px 0 0 0;
+}
+.bookCollection h1 .count {
+  margin: 0 10px 0 10px;
+  padding: 0 10px 0 10px;
+  vertical-align: 3px;
+  font-size: 24px;
+  font-weight: normal;
+  border-radius: 15px;
+  background: #ddd;
+  color: #666;
+}
+@media (prefers-color-scheme: dark) {
+  .bookCollection h1 .count {
+    background: #666;
+    color: #bbb;
+  }
+}
+.options {
+  float: left;
+  height: 40px;
+  padding: 3px;
+  border-radius: 8px;
+  background: #ddd;
+}
+@media (prefers-color-scheme: dark) {
+  .options {
+    background: #333;
+  }
+}
+.options .option {
+  float: left;
+  height: 40px;
+  line-height: 40px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  color: #555;
+  border-radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  .options .option {
+    color: #bbb;
+  }
+}
+.options .option .count {
+  margin: 0 0 0 3px;
+  padding: 0 8px 0 8px;
+  vertical-align: 1px;
+  font-size: 18px;
+  font-weight: normal;
+  border-radius: 15px;
+  background: #c0c0c0;
+  color: #777;
+}
+@media (prefers-color-scheme: dark) {
+  .options .option .count {
+    background: #444;
+    color: #999;
+  }
+}
+/* #boughtBooks .options.media {
+  margin: 0 0 40px 0;
+} */
+.options.media .option {
+  padding: 0 12px 0 12px;
+}
+.options.pagesRange {
+  clear: left;
+  margin: 20px 0 20px 0;  
+}
+.options.pagesRange .option {
+  padding: 0 12px 0 12px;
+}
+#boughtBooks .options.pagesRange {
+  margin-bottom: 40px;  
+}
+.options.group {
+  clear: left;
+  width: 360px;
+  margin: 0 40px 30px 0;
+}
+.options.group .option {
+  width: 120px;
+}
+.options.bookInfo {
+  clear: right; 
+  width: 450px;
+  margin: 0 40px 30px 0;
+}
+.options.bookInfo .option {
+  width: 150px;
+}
+.options.order {
+  width: 300px;
+  margin: 0 0 30px 0;  
+}
+.options.order .option {
+  width: 150px;
+}
+.bookList {
+  clear: both;
+}
+.bookList .readMonth,
+.bookList .readYear {
+  display: none;
+  clear: both;
+  padding: 40px 0 20px 0;
+  height: 30px;
+  line-height: 30px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #555;
+}
+@media (prefers-color-scheme: dark) {
+  .bookList .readMonth,
+  .bookList .readYear {
+    color: #DEDEDC;
+  }
+}
+.bookList .readMonth .count,
+.bookList .readYear .count {
+  margin: 0 0 0 10px;
+  padding: 0 10px 0 10px;
+  vertical-align: 1px;
+  font-size: 22px;
+  font-weight: normal;
+  border-radius: 15px;
+  background: #ddd;
+  color: #666;
+}
+@media (prefers-color-scheme: dark) {
+  .bookList .readMonth .count,
+  .bookList .readYear .count {
+    background: #666;
+    color: #bbb;
+  }
+}
+.book {
+  position: relative;
+  margin: 0 48px 70px 0;
+  width: 200px;
+  height: 420px;
+  float: left;
+}
+.book .image img {
+  width: 100%;
+  max-height: 300px;
+}
+.book .name {
+  position: absolute;
+  top: 310px;
+  font-size: 18px;
+  font-weight: bold;
+  max-height: 50px;
+  overflow: hidden;
+}
+.book .media {
+  position: absolute;
+  bottom: 30px;
+  font-size: 14px;
+  color: #aaa;
+  line-height: 22px;
+}
+.book .readDate {
+  position: absolute;
+  bottom: 30px;
+  right: 3px;
+  font-size: 14px;
+  color: #aaa;
+  line-height: 22px;
+}
+.book .pagesIndicator {
+  position: absolute;
+  bottom: 25px;
+  height: 3px;
+  background: #ddd;
+  border-radius: 5px;
+}
+@media (prefers-color-scheme: dark) {
+  .book .pagesIndicator {
+    background: #999;
+  }
+}
+.book .pagesIndicator.percent1 {
+  background: #888;
+}
+@media (prefers-color-scheme: dark) {
+  .book .pagesIndicator.percent1 {
+    background: #666;
+  }
+}
+.book .pagesIndicator.percent2 {
+  background: navy;
+}
+.book .pagesIndicator.percent3 {
+  background: orange;
+}
+.book .pagesIndicator .pagesText {
+  display: none;
+  position: absolute;
+  top: 3px;
+  width: 200px;
+  font-size: 14px;
+  color: #aaa;
+  line-height: 22px;
+}
+.book .pagesIndicator:hover .pagesText {
+  display: block;
+}
+.book .rating {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  letter-spacing: 3px;
+}
+.book .rating .star {
+  color: #F5B943;
+}
+.book .rating .hollowStar {
+  color: #ccc;
+}
+.menu {
+  position: fixed;
+  right: 0;
+  bottom: 50%;
+  width: 100px;
+  padding: 6px 0 6px 10px;
+  background: #777;
+  border: 1px solid #ccc;
+  border-radius: 5px 0 0 5px;
+  box-shadow: -20px 10px 50px #777;
+}
+@media (prefers-color-scheme: dark) {
+  .menu {
+    background: #555;
+    box-shadow: -20px 10px 50px #555;
+  }
+}
+.menu a {
+  display: block;
+  height: 30px;
+  line-height: 30px;
+  font-size: 16px;
+  color: #ddd;
+}
+.menu a .count {
+  margin: 0 0 0 5px;
+  padding: 0 5px 0 5px;
+  vertical-align: 1px;
+  font-size: 13px;
+  font-weight: normal;
+  border-radius: 15px;
+  background: #aaa;
+  color: #555;
+}
+.menu .closeButton {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  line-height: 10px;
+  font-size: 16px;
+  color: #ddd;
+  cursor: pointer;
+}
+.bookCollection.group-month .option.group-month,
+.bookCollection.group-year .option.group-year,
+.bookCollection.group-none .option.group-none,
+.bookCollection.bookInfo-detail .option.bookInfo-detail,
+.bookCollection.bookInfo-onlyBigImage .option.bookInfo-onlyBigImage,
+.bookCollection.bookInfo-onlySmallImage .option.bookInfo-onlySmallImage,
+.bookCollection.media-所有介质 .option.media-所有介质,
+.bookCollection.media-纸质书 .option.media-纸质书,
+.bookCollection.media-多看 .option.media-多看,
+.bookCollection.media-当当 .option.media-当当,
+.bookCollection.media-京东 .option.media-京东,
+.bookCollection.media-微信 .option.media-微信,
+.bookCollection.media-豆瓣 .option.media-豆瓣,
+.bookCollection.media-Kindle .option.media-Kindle,
+.bookCollection.media-Apple .option.media-Apple,
+.bookCollection.media-PDF .option.media-PDF,
+.bookCollection.media-EPUB .option.media-EPUB,
+.bookCollection.pagesRange-所有 .option.pagesRange-所有,
+.bookCollection.pagesRange-未知 .option.pagesRange-未知,
+.bookCollection.pagesRange-200页以下 .option.pagesRange-200页以下,
+.bookCollection.pagesRange-200到500页 .option.pagesRange-200到500页,
+.bookCollection.pagesRange-500到1000页 .option.pagesRange-500到1000页,
+.bookCollection.pagesRange-1000页以上 .option.pagesRange-1000页以上,
+.bookCollection.order-按阅读日期序 .option.order-按阅读日期序,
+.bookCollection.order-按评级序 .option.order-按评级序 {
+  background: white;
+  box-shadow: 2px 2px 3px #aaa;
+}
+@media (prefers-color-scheme: dark) {
+  .bookCollection.group-month .option.group-month,
+  .bookCollection.group-year .option.group-year,
+  .bookCollection.group-none .option.group-none,
+  .bookCollection.bookInfo-detail .option.bookInfo-detail,
+  .bookCollection.bookInfo-onlyBigImage .option.bookInfo-onlyBigImage,
+  .bookCollection.bookInfo-onlySmallImage .option.bookInfo-onlySmallImage,
+  .bookCollection.media-所有介质 .option.media-所有介质,
+  .bookCollection.media-纸质书 .option.media-纸质书,
+  .bookCollection.media-多看 .option.media-多看,
+  .bookCollection.media-当当 .option.media-当当,
+  .bookCollection.media-京东 .option.media-京东,
+  .bookCollection.media-微信 .option.media-微信,
+  .bookCollection.media-豆瓣 .option.media-豆瓣,
+  .bookCollection.media-Kindle .option.media-Kindle,
+  .bookCollection.media-Apple .option.media-Apple,
+  .bookCollection.media-PDF .option.media-PDF,
+  .bookCollection.media-EPUB .option.media-EPUB,
+  .bookCollection.pagesRange-所有 .option.pagesRange-所有,
+  .bookCollection.pagesRange-未知 .option.pagesRange-未知,
+  .bookCollection.pagesRange-200页以下 .option.pagesRange-200页以下,
+  .bookCollection.pagesRange-200到500页 .option.pagesRange-200到500页,
+  .bookCollection.pagesRange-500到1000页 .option.pagesRange-500到1000页,
+  .bookCollection.pagesRange-1000页以上 .option.pagesRange-1000页以上,
+  .bookCollection.order-按阅读日期序 .option.order-按阅读日期序,
+  .bookCollection.order-按评级序 .option.order-按评级序 {
+    background: #666;
+    box-shadow: 2px 2px 3px #444;
+  }  
+}
+.bookCollection.group-none .option.group-none,
+.bookCollection.bookInfo-onlySmallImage .option.bookInfo-onlySmallImage,
+.bookCollection.media-EPUB .option.media-EPUB,
+.bookCollection.pagesRange-a1000 .option.pagesRange-a1000 {
+  box-shadow: -2px 2px 3px #aaa;
+}
+@media (prefers-color-scheme: dark) {
+  .bookCollection.group-none .option.group-none,
+  .bookCollection.bookInfo-onlySmallImage .option.bookInfo-onlySmallImage,
+  .bookCollection.media-EPUB .option.media-EPUB,
+  .bookCollection.pagesRange-a1000 .option.pagesRange-a1000 {
+    box-shadow: -2px 2px 3px #444;
+  }
+}
+.bookCollection.group-month .options.order .option {
+  color: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+@media (prefers-color-scheme: dark) {
+  .bookCollection.group-month .options.order .option {
+    color: #777;
+  }
+}
+.bookCollection.group-month .bookList .readMonth,
+.bookCollection.group-year .bookList .readYear {
+  display: block;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book {
+  margin: 0 10px 10px 0;
+  height: 280px;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .image img {
+  max-height: 280px;
+  height: 280px;
+  border-radius: 10px;
+}
+.bookCollection.bookInfo-onlySmallImage .bookList .book {
+  margin: 0 5px 5px 0;
+  width: 60px;
+  height: 85px;
+}
+.bookCollection.bookInfo-onlySmallImage .bookList .book .image img {
+  max-height: 85px;
+  height: 85px;
+  border-radius: 5px;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail,
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  padding: 8px;
+  border: 1px solid #999;
+  background: white;
+  border-radius: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  .bookCollection.bookInfo-onlyBigImage .bookList .book .detail,
+  .bookCollection.bookInfo-onlySmallImage .bookList .book .detail {
+    background: #333;
+  }
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail {
+  top: 280px;
+  width: 184px;
+}
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail {
+  top: 85px;
+  width: 164px;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .name {
+  position: static;
+}
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .name {
+  position: static;
+  font-size: 16px;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .media {
+  position: static;
+  float: left;
+  margin: 0 20px 0 0;
+  height: 20px;
+}
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .media {
+  position: static;
+  float: left;
+  margin: 0 10px 0 0;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .readDate,
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .readDate {
+  position: static;
+  float: left;
+  height: 20px;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .pagesIndicator,
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .pagesIndicator {
+  position: static;
+  clear: both;
+  height: 20px;
+  background: transparent;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .pagesIndicator.percent1,
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .pagesIndicator.percent1 {
+  display: none;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .pagesIndicator .pagesText,
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .pagesIndicator .pagesText {
+  display: block;
+  position: static;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book .detail .rating,
+.bookCollection.bookInfo-onlySmallImage .bookList .book .detail .rating {
+  position: static;
+  float: left;
+  height: 20px;
+}
+.bookCollection.bookInfo-onlyBigImage .bookList .book:hover .detail,
+.bookCollection.bookInfo-onlySmallImage .bookList .book:hover .detail {
+  display: block;
+}
+.bookCollection.order-按评级序 .options.group .option {
+  color: #ccc;
+  cursor: default;
+  pointer-events: none;
+}
+@media (prefers-color-scheme: dark) {
+  .bookCollection.order-按评级序 .options.group .option {
+    color: #777;
+  }
+}
+/* 《杀死一只知更鸟》封面和暗背景太接近了，所以加个边框 */
+@media (prefers-color-scheme: dark) {
+  .bookList .book .image img[src="https://img9.doubanio.com/view/subject/l/public/s29350294.jpg"] {
+    border: 1px solid #666;
+  }
+}
+</style>
+</head>
+<body>
+<div class="bookCollection media-所有介质" id="readingBooks">
+  <h1><a target=_blank href="https://book.douban.com/people/liqi4096/do">在读<span class=count><script>document.write(readingBooks.length)</script></span></a></h1>
+  <script>document.write(renderBookList(readingBooks));</script>
+</div>
+<div class="bookCollection media-所有介质 pagesRange-所有" id="boughtBooks">
+  <h1><a target=_blank href="https://www.douban.com/doulist/126343317/">已购买<span class=count><script>document.write(boughtBooks.length)</script></span></a></h1>
+  <div class="options media">
+    <script>
+      document.write(renderMediaOptionButton("所有介质", "boughtBooks"));
+      document.write(renderMediaOptionButton("纸质书", "boughtBooks"));
+      document.write(renderMediaOptionButton("多看", "boughtBooks"));
+      document.write(renderMediaOptionButton("当当", "boughtBooks"));
+      document.write(renderMediaOptionButton("京东", "boughtBooks"));
+      document.write(renderMediaOptionButton("微信", "boughtBooks"));
+      document.write(renderMediaOptionButton("豆瓣", "boughtBooks"));
+      document.write(renderMediaOptionButton("Kindle", "boughtBooks"));
+      document.write(renderMediaOptionButton("PDF", "boughtBooks"));
+    </script>
+  </div>
+  <div class="options pagesRange">
+    <script>
+      document.write(renderPagesRangeOptionButton("所有", "boughtBooks"));
+      document.write(renderPagesRangeOptionButton("未知", "boughtBooks"));
+      document.write(renderPagesRangeOptionButton("200页以下", "boughtBooks"));
+      document.write(renderPagesRangeOptionButton("200到500页", "boughtBooks"));
+      document.write(renderPagesRangeOptionButton("500到1000页", "boughtBooks"));
+      document.write(renderPagesRangeOptionButton("1000页以上", "boughtBooks"));
+    </script>
+  </div>
+  <script>document.write(renderBookList(boughtBooks));</script>
+</div>
+<div class="bookCollection group-month bookInfo-detail media-所有介质 pagesRange-所有 order-按阅读日期序" id="readBooks">
+  <h1><a target=_blank href="https://book.douban.com/people/liqi4096/collect">读过<span class=count><script>document.write(readBooks.length)</script></span></a></h1>
+  <div class="options media">
+    <script>
+      document.write(renderMediaOptionButton("所有介质", "readBooks"));
+      document.write(renderMediaOptionButton("纸质书", "readBooks"));
+      document.write(renderMediaOptionButton("多看", "readBooks"));
+      document.write(renderMediaOptionButton("当当", "readBooks"));
+      document.write(renderMediaOptionButton("京东", "readBooks"));
+      document.write(renderMediaOptionButton("微信", "readBooks"));
+      document.write(renderMediaOptionButton("豆瓣", "readBooks"));
+      document.write(renderMediaOptionButton("Kindle", "readBooks"));
+      document.write(renderMediaOptionButton("Apple", "readBooks"));
+      document.write(renderMediaOptionButton("PDF", "readBooks"));
+      document.write(renderMediaOptionButton("EPUB", "readBooks"));
+    </script>
+  </div>
+  <div class="options pagesRange">
+    <script>
+      document.write(renderPagesRangeOptionButton("所有", "readBooks"));
+      document.write(renderPagesRangeOptionButton("未知", "readBooks"));
+      document.write(renderPagesRangeOptionButton("200页以下", "readBooks"));
+      document.write(renderPagesRangeOptionButton("200到500页", "readBooks"));
+      document.write(renderPagesRangeOptionButton("500到1000页", "readBooks"));
+      document.write(renderPagesRangeOptionButton("1000页以上", "readBooks"));
+    </script>
+  </div>
+  <div class="options group">
+    <div class="option group-month" onclick="setOption('readBooks', 'group', 'month')">月</div>
+    <div class="option group-year" onclick="setOption('readBooks', 'group', 'year')">年</div>
+    <div class="option group-none" onclick="setOption('readBooks', 'group', 'none')">不分组</div>
+  </div>
+  <div class="options bookInfo">
+    <div class="option bookInfo-detail" onclick="setOption('readBooks', 'bookInfo', 'detail')">显示书详情</div>
+    <div class="option bookInfo-onlyBigImage" onclick="setOption('readBooks', 'bookInfo', 'onlyBigImage')">仅大图</div>
+    <div class="option bookInfo-onlySmallImage" onclick="setOption('readBooks', 'bookInfo', 'onlySmallImage')">仅小图</div>
+  </div>
+  <div class="options order">
+    <script>
+      document.write(renderOrderOptionButton("按阅读日期序", "readBooks"));
+      document.write(renderOrderOptionButton("按评级序", "readBooks"));
+    </script>
+  </div>
+  <div class="bookListContainer">
+    <script>document.write(renderBookList(readBooks));</script>
+  </div>
+</div>
+<div class="bookCollection media-所有介质" id="suspendedBooks">
+  <h1><a target=_blank href="https://www.douban.com/doulist/126343331/">暂停<span class=count><script>document.write(suspendedBooks.length)</script></span></a></h1>
+  <script>document.write(renderBookList(suspendedBooks));</script>
+</div>
+
+<div class="menu" id="menu">
+  <div class="closeButton" onclick="menu.style.display = 'none'">×</div>
+  <a href="#readingBooks">在读<span class=count><script>document.write(readingBooks.length)</script></span></a>
+  <a href="#boughtBooks">已购买<span class=count><script>document.write(boughtBooks.length)</script></span></a>
+  <a href="#readBooks">读过<span class=count><script>document.write(readBooks.length)</script></span></a>
+  <a href="#suspendedBooks">暂停<span class=count><script>document.write(suspendedBooks.length)</script></span></a>
+</div>
+
+</body>
+</html>
