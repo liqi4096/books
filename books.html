@@ -675,6 +675,12 @@ a:visited {
   color: #555;
   z-index: 10;
 }
+@media (prefers-color-scheme: dark) {
+  .book .comment .content {
+    border: 1px solid #777;
+    box-shadow: 2px 2px 3px #333;
+  }
+}
 .book .comment:hover .content {
   display: block;
 }
